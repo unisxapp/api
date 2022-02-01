@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+
+  price:
+    image: ghcr.io/unisxapp/api:main
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - RAPID_API_KEY=61fa85c90emsh5a370a6987404acp1230fajsn80c869d4beb0
