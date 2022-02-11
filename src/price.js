@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 
-import {BASKET, RAPID_API_KEY, CORRECTION_FACTOR} from './config.js'
+import {BASKET, RAPID_API_KEY, CORRECTION_FACTOR, HISTORICAL_RANGE, HISTORICAL_INTERVAL} from './config.js'
 import * as ethers from 'ethers'
 const {FixedNumber, BigNumber} = ethers
 
@@ -43,7 +43,7 @@ export async function getPriceFN() {
   return calculateBasketPrice(prices);
 }
 
-async function calculateBasketPrice(stockPrices) {
+function calculateBasketPrice(stockPrices) {
   const prices = stockPrices.map((rawPrice) => FixedNumber.from(rawPrice.toString()));
 
   // Calculate average price
@@ -57,6 +57,73 @@ async function calculateBasketPrice(stockPrices) {
   price = price.mulUnsafe(FixedNumber.from(CORRECTION_FACTOR.toString()));
 
   return price
+}
+
+function intersectSets(a, b) {
+  return new Set([...a].filter(i => b.has(i)));
+}
+
+async function doGetHistoricalPrices() {
+  // Construct URL.
+  // https://rapidapi.com/principalapis/api/stock-data-yahoo-finance-alternative/
+  const symbolsStr = BASKET.join("%2C");
+  const url = `https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v8/finance/spark?symbols=${symbolsStr}&range=${HISTORICAL_RANGE}&interval=${HISTORICAL_INTERVAL}`;
+  const options = {
+    method: "GET",
+    headers: {
+      "x-rapidapi-host": "stock-data-yahoo-finance-alternative.p.rapidapi.com",
+      "x-rapidapi-key": RAPID_API_KEY,
+    },
+  };
+  const response = await (await fetch(url, options)).json()
+
+  if (response == null) {
+    throw new Error(`Invalid response from url ${url}`);
+  }
+
+  // Validate response
+  for (const symbol of BASKET) {
+    const stockData = response[symbol];
+    if (stockData == null) {
+      throw new Error(`Could not parse price result from url ${url}: missing data for symbol ${symbol}`);
+    }
+    if (stockData.timestamp.length == 0 || stockData.timestamp.length != stockData.close.length) {
+      throw new Error(`Could not parse price result from url ${url}: invalid data for symbol ${symbol}`);
+    }
+    for (const ts of stockData.timestamp) {
+      if (typeof ts != "number") {
+        throw new Error("Could not parse data: invalid timestamp type");
+      }
+    }
+    for (const p of stockData.close) {
+      if (typeof p != "number") {
+        throw new Error("Could not parse data: invalid price type");
+      }
+    }
+    for (let i = 1; i < stockData.timestamp.length; i++) {
+      if (stockData.timestamp[i] <= stockData.timestamp[i - 1]) {
+        throw new Error(`Could not parse data: timestamps for ${symbol} are not increasing monotonously`);
+      }
+    }
+  }
+
+  // Data returned from API may lack some timestamps for some symbols. We only
+  // use those timestamps that are present for all the symbols
+  let timestamps = new Set(response[BASKET[0]].timestamp)
+  for(let symbol of BASKET) {
+    timestamps = intersectSets(timestamps, new Set(response[symbol].timestamp))
+  }
+  timestamps = [...timestamps].sort((a,b) => a - b)
+
+  const result = timestamps.map(ts => {
+    const prices = BASKET.map(symbol => {
+      const index = response[symbol].timestamp.findIndex(t => ts == t)
+      return response[symbol].close[index]
+    })
+    return {timestamp: ts, price: calculateBasketPrice(prices).toString()}
+  })
+
+  return result
 }
 
 function now() {
@@ -81,4 +148,12 @@ export const getPrice = cached(
     return (await getPriceFN()).toString()
   },
   3 * 60 // 3 minutes
+)
+
+export const getHistoricalPrices = cached(
+  async function getHistoricalPrices() {
+    console.log('updating historical price')
+    return await doGetHistoricalPrices()
+  },
+  12 * 3600, // 12 hours
 )
