@@ -10,3 +10,5 @@ services:
     environment:
       - PORT=8080
       - RAPID_API_KEY=61fa85c90emsh5a370a6987404acp1230fajsn80c869d4beb0
+      - HISTORICAL_RANGE=6mo
+      - HISTORICAL_INTERVAL=1d
