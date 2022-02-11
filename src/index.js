@@ -13,8 +13,8 @@ app.get('/prices/uSPAC10', async (req, res) => {
   try {
     res.json({price: await getPrice()})
   } catch(e) {
+    console.error(e)
     res.status(500).send('internal server error')
-    throw e
   }
 })
 
