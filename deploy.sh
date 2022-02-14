@@ -30,7 +30,7 @@ ssh $SSH_HOST bash -e <<-EOF
   cd /opt/api
   echo 'Reload nginx'
   sudo cp /opt/api/api.conf /etc/nginx/sites-available
-  sudo ln -s /etc/nginx/sites-{available,enabled}/api.conf
+  sudo ln -sf /etc/nginx/sites-{available,enabled}/api.conf
   sudo nginx -s reload
   echo 'Run docker compose'
   docker-compose up -d
