@@ -3,7 +3,7 @@ version: "3"
 services:
 
   price:
-    image: ghcr.io/unisxapp/api:main
+    image: ghcr.io/unisxapp/api:v1
     restart: unless-stopped
     ports:
       - "8080:8080"
