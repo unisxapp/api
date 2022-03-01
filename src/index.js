@@ -1,6 +1,6 @@
 import express from 'express'
-import faucet from './faucet.js'
 import {getPrice, getHistoricalPrices} from './price.js'
+import {FAUCET_ENABLED} from './config.js'
 
 const app = express()
 app.use(express.json())
@@ -34,10 +34,13 @@ addHandler('get', '/historicalPrices/uSPAC10', async () => {
   }))
 })
 
-addHandler('post', '/faucet', async (data) => {
-  const txhash = await faucet(data.to)
-  return {txhash}
-})
+if(FAUCET_ENABLED) {
+  const {faucet} = await import('./faucet.js');
+  addHandler('post', '/faucet', async (data) => {
+    const txhash = await faucet(data.to)
+    return {txhash}
+  })
+}
 
 app.listen(port, () => {
   console.log('listening on port', port)

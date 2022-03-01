@@ -22,7 +22,7 @@ async function faucetEther(to, nonce) {
   return tx.hash
 }
 
-export default async function faucet(to) {
+export async function faucet(to) {
   const nonce = await provider.getTransactionCount(wallet.address)
   const [_, txhash] = await Promise.all([
     faucetUSDC(to, nonce),
