@@ -24,10 +24,11 @@ ssh $SSH_HOST sudo bash -e <<-EOF
 EOF
 
 echo 'Copy files'
-rsync -r --rsync-path='sudo rsync' ./docker-compose.yml api.conf $SSH_HOST:/opt/api
+rsync -r --rsync-path='sudo rsync' ./docker-compose.yml api.conf kovan.env $SSH_HOST:/opt/api
 
 ssh $SSH_HOST bash -e <<-EOF
   cd /opt/api
+  sudo mv kovan.env api.env
   echo 'Reload nginx'
   sudo cp /opt/api/api.conf /etc/nginx/sites-available
   sudo ln -sf /etc/nginx/sites-{available,enabled}/api.conf
