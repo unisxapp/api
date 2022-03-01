@@ -2,20 +2,19 @@ export const BASKET = ["DWAC", "IRDM", "PRIM", "TGLS", "MP", "LCID", "GDYN", "SM
 
 export const CORRECTION_FACTOR = '1.0'
 
-export const RAPID_API_KEY = process.env.RAPID_API_KEY
-
-if(RAPID_API_KEY == null) {
-  throw new Error('RAPID_API_KEY is not specified')
+function get_value(key) {
+  const value = process.env[key]
+  if(value == null) {
+    throw new Error(key + ' is not specified')
+  }
+  return value
 }
 
-export const HISTORICAL_RANGE = process.env.HISTORICAL_RANGE
-
-if(HISTORICAL_RANGE == null) {
-  throw new Error('HISTORICAL_RANGE is not specified')
-}
-
-export const HISTORICAL_INTERVAL = process.env.HISTORICAL_INTERVAL
-
-if(HISTORICAL_INTERVAL == null) {
-  throw new Error('HISTORICAL_INTERVAL is not specified')
-}
+export const RAPID_API_KEY = get_value('RAPID_API_KEY')
+export const HISTORICAL_RANGE = get_value('HISTORICAL_RANGE')
+export const HISTORICAL_INTERVAL = get_value('HISTORICAL_INTERVAL')
+export const INFURA_API_KEY = get_value('INFURA_API_KEY')
+export const USDC_ADDRESS = get_value('USDC_ADDRESS')
+export const ETH_AMOUNT = get_value('ETH_AMOUNT')
+export const USDC_AMOUNT = get_value('USDC_AMOUNT')
+export const WALLET_PK = get_value('WALLET_PK')
