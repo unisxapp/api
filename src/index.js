@@ -1,5 +1,5 @@
 import express from 'express'
-import {getPrice, getHistoricalPrices} from './price.js'
+import {getPrice, getHistoricalPrices, getHistoricalPrice} from './price.js'
 import {FAUCET_ENABLED} from './config.js'
 
 const app = express()
@@ -14,7 +14,7 @@ if(isNaN(port)) {
 function addHandler(method, route, handler) {
   app[method](route, async (req, res) => {
     try {
-      res.json(await handler(req.body))
+      res.json(await handler(req))
     } catch(e) {
       console.error(e)
       res.status(500).send('internal server error')
@@ -34,10 +34,15 @@ addHandler('get', '/historicalPrices/uSPAC10', async () => {
   }))
 })
 
+addHandler('get', '/historicalPrice/uSPAC10', async (req) => {
+  const price = await getHistoricalPrice(req.query.timestamp)
+  return {price}
+})
+
 if(FAUCET_ENABLED) {
   const {faucet} = await import('./faucet.js');
-  addHandler('post', '/faucet', async (data) => {
-    const txhash = await faucet(data.to)
+  addHandler('post', '/faucet', async (req) => {
+    const txhash = await faucet(req.body.to)
     return {txhash}
   })
 }
