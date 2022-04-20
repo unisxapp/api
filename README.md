@@ -6,3 +6,4 @@ In order to server can work with various instruments, it is necessary to add a p
 - getPrice(), 
 - getHistoricalPrice(), 
 - getHistoricalPrices().
+and create the appropriate handlers in index.js
