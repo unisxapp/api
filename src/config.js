@@ -1,6 +1,6 @@
-export const BASKET = ["DWAC", "IRDM", "MP", "PRIM", "WSC", "SMPL", "TGLS", "CERE", "KW", "ROIC"]
+export const BASKET = ["DWAC", "IRDM", "MP", "PRIM", "WSC", "SMPL", "TGLS", "CERE", "KW", "HPK"]
 
-export const CORRECTION_FACTOR = '1.0'
+export const CORRECTION_FACTOR = '0,95951'
 
 function get_value(key) {
   const value = process.env[key]
